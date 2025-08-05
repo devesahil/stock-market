@@ -5,9 +5,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function MarketNews() {
   const { data: news, isLoading } = useNews();
 
-  const formatDate = (date: string) => {
+  const formatDate = (date: string | Date) => {
     const now = new Date();
-    const publishedDate = new Date(date);
+    const publishedDate = typeof date === 'string' ? new Date(date) : date;
     const diffInHours = Math.floor((now.getTime() - publishedDate.getTime()) / (1000 * 60 * 60));
     
     if (diffInHours < 1) return "Just now";

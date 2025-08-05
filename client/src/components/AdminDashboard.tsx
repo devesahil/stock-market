@@ -313,7 +313,7 @@ export default function AdminDashboard() {
                       <div className="flex-1">
                         <div className="font-semibold">{stock.symbol} - {stock.name}</div>
                         <div className="text-sm text-gray-600">
-                          ${stock.price} ({stock.change >= 0 ? '+' : ''}{stock.changePercent}%)
+                          ${stock.price} ({parseFloat(stock.change) >= 0 ? '+' : ''}{stock.changePercent}%)
                         </div>
                       </div>
                       <div className="flex space-x-2">

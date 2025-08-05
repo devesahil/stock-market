@@ -1,7 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { usePageContent } from "@/hooks/usePageContent";
+import { getContentValue } from "@/utils/contentHelpers";
 
 export default function HeroSection() {
+  const { data: content } = usePageContent();
   return (
     <section className="relative bg-gradient-to-br from-primary to-blue-800 text-white overflow-hidden">
       <div className="absolute inset-0 opacity-10">
@@ -16,13 +19,10 @@ export default function HeroSection() {
             transition={{ duration: 0.8 }}
           >
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6">
-              Trade Smarter with
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">
-                {" "}Real-Time Data
-              </span>
+              {getContentValue(content, 'hero', 'title', 'Trade Smarter with Real-Time Data')}
             </h1>
             <p className="text-xl text-blue-100 mb-8 leading-relaxed">
-              Access professional-grade trading tools, real-time market analytics, and expert insights. Start your journey to financial success with our advanced platform.
+              {getContentValue(content, 'hero', 'subtitle', 'Access professional-grade trading tools, real-time market analytics, and expert insights. Start your journey to financial success with our advanced platform.')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button 
@@ -30,7 +30,7 @@ export default function HeroSection() {
                 className="bg-white text-primary hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl font-semibold text-lg px-8 py-4"
                 data-testid="button-start-trading"
               >
-                Start Trading Free
+                {getContentValue(content, 'hero', 'button_primary', 'Start Trading Free')}
               </Button>
               <Button 
                 variant="outline" 
@@ -38,7 +38,7 @@ export default function HeroSection() {
                 className="border-2 border-white text-white hover:bg-white hover:text-primary transition-all duration-300 font-semibold text-lg px-8 py-4"
                 data-testid="button-watch-demo"
               >
-                Watch Demo
+                {getContentValue(content, 'hero', 'button_secondary', 'Watch Demo')}
               </Button>
             </div>
             <div className="mt-8 flex items-center space-x-8 text-blue-100">

@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { useStocks } from "@/hooks/useStocks";
 import { useNews } from "@/hooks/useNews";
 import { useTestimonials } from "@/hooks/useTestimonials";
+import { usePageContent } from "@/hooks/usePageContent";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -22,10 +23,12 @@ export default function AdminDashboard() {
   const { data: stocks, isLoading: stocksLoading } = useStocks();
   const { data: news, isLoading: newsLoading } = useNews();
   const { data: testimonials, isLoading: testimonialsLoading } = useTestimonials();
+  const { data: pageContent, isLoading: contentLoading } = usePageContent();
 
   const [editingStock, setEditingStock] = useState<any>(null);
   const [editingNews, setEditingNews] = useState<any>(null);
   const [editingTestimonial, setEditingTestimonial] = useState<any>(null);
+  const [editingContent, setEditingContent] = useState<any>(null);
 
   // Stock mutations
   const createStockMutation = useMutation({
@@ -153,6 +156,21 @@ export default function AdminDashboard() {
     },
   });
 
+  // Content mutations
+  const updateContentMutation = useMutation({
+    mutationFn: async (data: any) => {
+      await apiRequest("POST", "/api/admin/content", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/content"] });
+      toast({ title: "Success", description: "Content updated successfully" });
+      setEditingContent(null);
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to update content", variant: "destructive" });
+    },
+  });
+
   const handleStockSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -216,6 +234,26 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleContentSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      section: formData.get("section") as string,
+      key: formData.get("key") as string,
+      value: formData.get("value") as string,
+    };
+
+    updateContentMutation.mutate(data);
+  };
+
+  const groupedContent = pageContent?.reduce((acc, item) => {
+    if (!acc[item.section]) {
+      acc[item.section] = [];
+    }
+    acc[item.section].push(item);
+    return acc;
+  }, {} as Record<string, typeof pageContent>) || {};
+
   return (
     <div className="container mx-auto p-6">
       <div className="mb-8">
@@ -224,10 +262,11 @@ export default function AdminDashboard() {
       </div>
 
       <Tabs defaultValue="stocks" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="stocks" data-testid="tab-stocks">Stocks</TabsTrigger>
           <TabsTrigger value="news" data-testid="tab-news">News</TabsTrigger>
           <TabsTrigger value="testimonials" data-testid="tab-testimonials">Testimonials</TabsTrigger>
+          <TabsTrigger value="content" data-testid="tab-content">Page Content</TabsTrigger>
         </TabsList>
 
         <TabsContent value="stocks" className="space-y-6">
@@ -570,6 +609,96 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="content" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Page Content Management</CardTitle>
+              <CardDescription>Edit all text content on the landing page</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {contentLoading ? (
+                <div>Loading content...</div>
+              ) : (
+                <div className="space-y-8">
+                  {Object.entries(groupedContent).map(([section, items]) => (
+                    <div key={section} className="border rounded-lg p-6">
+                      <h3 className="text-lg font-semibold mb-4 capitalize">{section.replace('_', ' ')} Section</h3>
+                      <div className="grid gap-4">
+                        {items.map((item) => (
+                          <div key={item.id} className="flex items-start space-x-4">
+                            <div className="flex-1">
+                              <Label htmlFor={`content-${item.id}`} className="text-sm font-medium">
+                                {item.key.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                              </Label>
+                              <div className="flex space-x-2 mt-1">
+                                {item.value.length > 100 ? (
+                                  <Textarea
+                                    id={`content-${item.id}`}
+                                    defaultValue={item.value}
+                                    className="min-h-[80px]"
+                                    data-testid={`textarea-${item.section}-${item.key}`}
+                                  />
+                                ) : (
+                                  <Input
+                                    id={`content-${item.id}`}
+                                    defaultValue={item.value}
+                                    data-testid={`input-${item.section}-${item.key}`}
+                                  />
+                                )}
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  onClick={() => {
+                                    const inputElement = document.getElementById(`content-${item.id}`) as HTMLInputElement | HTMLTextAreaElement;
+                                    const value = inputElement?.value;
+                                    if (value !== undefined) {
+                                      updateContentMutation.mutate({
+                                        section: item.section,
+                                        key: item.key,
+                                        value: value
+                                      });
+                                    }
+                                  }}
+                                  data-testid={`button-save-${item.section}-${item.key}`}
+                                >
+                                  Save
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                  
+                  <div className="border rounded-lg p-6 bg-gray-50">
+                    <h3 className="text-lg font-semibold mb-4">Add New Content</h3>
+                    <form onSubmit={handleContentSubmit} className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="section">Section</Label>
+                          <Input id="section" name="section" placeholder="e.g., hero, features" required data-testid="input-new-content-section" />
+                        </div>
+                        <div>
+                          <Label htmlFor="key">Key</Label>
+                          <Input id="key" name="key" placeholder="e.g., title, subtitle" required data-testid="input-new-content-key" />
+                        </div>
+                      </div>
+                      <div>
+                        <Label htmlFor="value">Value</Label>
+                        <Textarea id="value" name="value" placeholder="Enter the content text" required data-testid="textarea-new-content-value" />
+                      </div>
+                      <Button type="submit" data-testid="button-add-content">
+                        Add Content
+                      </Button>
+                    </form>
+                  </div>
                 </div>
               )}
             </CardContent>

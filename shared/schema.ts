@@ -67,6 +67,25 @@ export const insertTestimonialSchema = createInsertSchema(testimonials).omit({
   updatedAt: true,
 });
 
+// Page content table for CMS
+export const pageContent = pgTable("page_content", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  section: varchar("section", { length: 100 }).notNull(), // e.g., 'hero', 'features', 'cta'
+  key: varchar("key", { length: 100 }).notNull(), // e.g., 'title', 'subtitle', 'description'
+  value: text("value").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  sectionKeyUnique: sql`UNIQUE (${table.section}, ${table.key})`,
+}));
+
+// Insert schema for page content
+export const insertPageContentSchema = createInsertSchema(pageContent).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type Stock = typeof stocks.$inferSelect;
 export type InsertStock = z.infer<typeof insertStockSchema>;
@@ -74,3 +93,5 @@ export type NewsArticle = typeof newsArticles.$inferSelect;
 export type InsertNewsArticle = z.infer<typeof insertNewsArticleSchema>;
 export type Testimonial = typeof testimonials.$inferSelect;
 export type InsertTestimonial = z.infer<typeof insertTestimonialSchema>;
+export type PageContent = typeof pageContent.$inferSelect;
+export type InsertPageContent = z.infer<typeof insertPageContentSchema>;

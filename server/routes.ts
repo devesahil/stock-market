@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertStockSchema, insertNewsArticleSchema, insertTestimonialSchema } from "@shared/schema";
+import { insertStockSchema, insertNewsArticleSchema, insertTestimonialSchema, insertPageContentSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Stock routes
@@ -166,6 +166,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting testimonial:", error);
       res.status(400).json({ message: "Failed to delete testimonial" });
+    }
+  });
+
+  // Page content routes
+  app.get("/api/content", async (req, res) => {
+    try {
+      const content = await storage.getAllPageContent();
+      res.json(content);
+    } catch (error) {
+      console.error("Error fetching page content:", error);
+      res.status(500).json({ message: "Failed to fetch page content" });
+    }
+  });
+
+  app.get("/api/content/:section", async (req, res) => {
+    try {
+      const { section } = req.params;
+      const content = await storage.getPageContent(section);
+      res.json(content);
+    } catch (error) {
+      console.error("Error fetching section content:", error);
+      res.status(500).json({ message: "Failed to fetch section content" });
+    }
+  });
+
+  app.post("/api/admin/content", async (req, res) => {
+    try {
+      const contentData = insertPageContentSchema.parse(req.body);
+      const content = await storage.upsertPageContent(contentData);
+      res.status(201).json(content);
+    } catch (error) {
+      console.error("Error creating/updating page content:", error);
+      res.status(400).json({ message: "Failed to save page content" });
+    }
+  });
+
+  app.delete("/api/admin/content/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deletePageContent(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting page content:", error);
+      res.status(400).json({ message: "Failed to delete page content" });
     }
   });
 

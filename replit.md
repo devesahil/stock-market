@@ -4,7 +4,7 @@
 
 TradePro is a modern stock trading platform featuring a professional landing page with real-time market data, interactive animations, and a comprehensive admin dashboard for content management. The application combines a React-based frontend with an Express.js backend, utilizing PostgreSQL for data persistence and modern UI components for an exceptional user experience.
 
-The platform showcases featured stocks with live price updates, market news, user testimonials, and engaging animations throughout the interface. The admin dashboard provides full CRUD operations for managing stocks, news articles, and testimonials with role-based access control.
+The platform showcases featured stocks with live price updates, market news, user testimonials, and engaging animations throughout the interface. The admin dashboard provides full CRUD operations for managing stocks, news articles, testimonials, and most importantly, a complete Content Management System (CMS) that allows administrators to edit all text content on the landing page in real-time.
 
 ## User Preferences
 
@@ -28,7 +28,8 @@ Preferred communication style: Simple, everyday language.
 - **Session Management**: Connect-pg-simple for PostgreSQL-backed session storage
 
 ### Data Layer Design
-- **Database Schema**: Three main entities (stocks, news_articles, testimonials) with UUID primary keys
+- **Database Schema**: Four main entities (stocks, news_articles, testimonials, page_content) with UUID primary keys
+- **Content Management**: Dynamic page content system allowing real-time editing of all landing page text
 - **Shared Schema**: Common schema definitions between frontend and backend using shared TypeScript files
 - **Type Safety**: End-to-end type safety from database schema to frontend components using Drizzle-Zod
 - **Real-time Updates**: Automatic data refetching every 30 seconds for stock price updates

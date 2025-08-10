@@ -4,7 +4,14 @@ import { log } from "./vite";
 
 async function createTables() {
   try {
-    // Create tables if they don't exist
+    // Drop existing tables to recreate with correct schema
+    await db.execute(`DROP TABLE IF EXISTS stocks CASCADE`);
+    await db.execute(`DROP TABLE IF EXISTS news_articles CASCADE`);
+    await db.execute(`DROP TABLE IF EXISTS testimonials CASCADE`);
+    await db.execute(`DROP TABLE IF EXISTS page_content CASCADE`);
+    await db.execute(`DROP TABLE IF EXISTS media CASCADE`);
+    
+    // Create tables with correct schema
     await db.execute(`
       CREATE TABLE IF NOT EXISTS stocks (
         id VARCHAR(255) PRIMARY KEY,

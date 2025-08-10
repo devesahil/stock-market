@@ -309,14 +309,38 @@ async function seedDatabase() {
     {
       id: nanoid(),
       section: "hero",
-      key: "cta",
-      value: "Start Trading Now",
+      key: "button_primary",
+      value: "Start Trading Free",
     },
     {
       id: nanoid(),
       section: "hero",
-      key: "background_image",
+      key: "button_secondary",
+      value: "Watch Demo",
+    },
+    {
+      id: nanoid(),
+      section: "hero",
+      key: "feature_1",
+      value: "No Commission Fees",
+    },
+    {
+      id: nanoid(),
+      section: "hero",
+      key: "feature_2",
+      value: "Real-Time Analytics",
+    },
+    {
+      id: nanoid(),
+      section: "hero",
+      key: "image_url",
       value: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+    },
+    {
+      id: nanoid(),
+      section: "hero",
+      key: "image_alt",
+      value: "Modern trading dashboard with financial charts",
     },
     {
       id: nanoid(),
@@ -329,6 +353,42 @@ async function seedDatabase() {
       section: "features",
       key: "subtitle",
       value: "Experience the power of real-time market data and advanced trading tools designed for both beginners and experienced investors.",
+    },
+    {
+      id: nanoid(),
+      section: "features",
+      key: "feature_1_title",
+      value: "Lightning Fast Execution",
+    },
+    {
+      id: nanoid(),
+      section: "features",
+      key: "feature_1_description",
+      value: "Execute trades in milliseconds with our advanced technology infrastructure and direct market access.",
+    },
+    {
+      id: nanoid(),
+      section: "features",
+      key: "feature_2_title",
+      value: "Advanced Analytics",
+    },
+    {
+      id: nanoid(),
+      section: "features",
+      key: "feature_2_description",
+      value: "Make informed decisions with comprehensive charts, technical indicators, and market analysis tools.",
+    },
+    {
+      id: nanoid(),
+      section: "features",
+      key: "feature_3_title",
+      value: "Bank-Level Security",
+    },
+    {
+      id: nanoid(),
+      section: "features",
+      key: "feature_3_description",
+      value: "Your investments are protected with 256-bit encryption and two-factor authentication.",
     },
     {
       id: nanoid(),
@@ -347,6 +407,12 @@ async function seedDatabase() {
       section: "about",
       key: "image",
       value: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+    },
+    {
+      id: nanoid(),
+      section: "about",
+      key: "image_alt",
+      value: "About section image showing financial charts",
     },
   ];
 

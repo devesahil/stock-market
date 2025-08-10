@@ -2,9 +2,12 @@ import { useStocks } from "@/hooks/useStocks";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
+import { usePageContent } from "@/hooks/usePageContent";
+import { getContentValue } from "@/utils/contentHelpers";
 
 export default function FeaturedStocks() {
   const { data: stocks, isLoading } = useStocks();
+  const { data: content } = usePageContent();
 
   const getStockInitial = (name: string) => {
     return name.charAt(0).toUpperCase();

@@ -184,6 +184,15 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async updatePageContent(id: string, content: Partial<InsertPageContent>): Promise<PageContent> {
+    const [updatedContent] = await db
+      .update(pageContent)
+      .set({ ...content, updatedAt: new Date() })
+      .where(eq(pageContent.id, id))
+      .returning();
+    return updatedContent;
+  }
+
   async deletePageContent(id: string): Promise<void> {
     await db.delete(pageContent).where(eq(pageContent.id, id));
   }

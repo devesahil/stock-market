@@ -158,8 +158,12 @@ export default function AdminDashboard() {
 
   // Content mutations
   const updateContentMutation = useMutation({
-    mutationFn: async (data: any) => {
-      await apiRequest("POST", "/api/admin/content", data);
+    mutationFn: async ({ id, data }: { id?: string; data: any }) => {
+      if (id) {
+        await apiRequest("PUT", `/api/admin/content/${id}`, data);
+      } else {
+        await apiRequest("POST", "/api/admin/content", data);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/content"] });
@@ -243,7 +247,7 @@ export default function AdminDashboard() {
       value: formData.get("value") as string,
     };
 
-    updateContentMutation.mutate(data);
+    updateContentMutation.mutate({ data });
   };
 
   const groupedContent = pageContent?.reduce((acc, item) => {
@@ -637,7 +641,27 @@ export default function AdminDashboard() {
                                 {item.key.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                               </Label>
                               <div className="flex space-x-2 mt-1">
-                                {item.value.length > 100 ? (
+                                {item.key.includes('url') ? (
+                                  <div className="flex-1 space-y-2">
+                                    <Input
+                                      id={`content-${item.id}`}
+                                      defaultValue={item.value}
+                                      placeholder="Enter image URL"
+                                      data-testid={`input-${item.section}-${item.key}`}
+                                    />
+                                    {item.value && item.value.startsWith('http') && (
+                                      <img 
+                                        src={item.value} 
+                                        alt="Preview" 
+                                        className="w-32 h-20 object-cover rounded border"
+                                        onError={(e) => {
+                                          const target = e.target as HTMLImageElement;
+                                          target.style.display = 'none';
+                                        }}
+                                      />
+                                    )}
+                                  </div>
+                                ) : item.value.length > 100 ? (
                                   <Textarea
                                     id={`content-${item.id}`}
                                     defaultValue={item.value}
@@ -659,9 +683,12 @@ export default function AdminDashboard() {
                                     const value = inputElement?.value;
                                     if (value !== undefined) {
                                       updateContentMutation.mutate({
-                                        section: item.section,
-                                        key: item.key,
-                                        value: value
+                                        id: item.id,
+                                        data: {
+                                          section: item.section,
+                                          key: item.key,
+                                          value: value
+                                        }
                                       });
                                     }
                                   }}

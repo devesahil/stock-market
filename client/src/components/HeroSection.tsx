@@ -46,13 +46,13 @@ export default function HeroSection() {
                 <svg className="w-5 h-5 text-secondary mr-2" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path>
                 </svg>
-                No Commission Fees
+                {getContentValue(content, 'hero', 'feature_1', 'No Commission Fees')}
               </div>
               <div className="flex items-center">
                 <svg className="w-5 h-5 text-secondary mr-2" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path>
                 </svg>
-                Real-Time Data
+                {getContentValue(content, 'hero', 'feature_2', 'Real-Time Analytics')}
               </div>
             </div>
           </motion.div>
@@ -64,8 +64,8 @@ export default function HeroSection() {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <img 
-              src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" 
-              alt="Modern trading dashboard with financial charts" 
+              src={getContentValue(content, 'hero', 'image_url', 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600')} 
+              alt={getContentValue(content, 'hero', 'image_alt', 'Modern trading dashboard with financial charts')} 
               className="rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-300" 
             />
             

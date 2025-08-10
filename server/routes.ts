@@ -202,6 +202,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/admin/content/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const contentData = insertPageContentSchema.parse(req.body);
+      const content = await storage.updatePageContent(id, contentData);
+      res.json(content);
+    } catch (error) {
+      console.error("Error updating page content:", error);
+      res.status(400).json({ message: "Failed to update page content" });
+    }
+  });
+
   app.delete("/api/admin/content/:id", async (req, res) => {
     try {
       const { id } = req.params;

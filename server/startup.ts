@@ -289,4 +289,66 @@ async function seedDatabase() {
   for (const testimonial of testimonialData) {
     await storage.createTestimonial(testimonial);
   }
+
+  // Seed page content
+  const contentData = [
+    {
+      id: nanoid(),
+      section: "hero",
+      key: "title",
+      value: "Master the Markets with Real-Time Trading Data",
+    },
+    {
+      id: nanoid(),
+      section: "hero",
+      key: "subtitle",
+      value: "Get instant access to live stock prices, market analysis, and trading insights. Make informed decisions with our comprehensive financial platform.",
+    },
+    {
+      id: nanoid(),
+      section: "hero",
+      key: "cta",
+      value: "Start Trading Now",
+    },
+    {
+      id: nanoid(),
+      section: "hero",
+      key: "background_image",
+      value: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+    },
+    {
+      id: nanoid(),
+      section: "features",
+      key: "title",
+      value: "Why Choose Our Platform",
+    },
+    {
+      id: nanoid(),
+      section: "features",
+      key: "subtitle",
+      value: "Experience the power of real-time market data and advanced trading tools designed for both beginners and experienced investors.",
+    },
+    {
+      id: nanoid(),
+      section: "about",
+      key: "title",
+      value: "About Our Platform",
+    },
+    {
+      id: nanoid(),
+      section: "about",
+      key: "content",
+      value: "We provide cutting-edge financial technology that empowers investors to make data-driven decisions. Our platform combines real-time market data with advanced analytics to give you the edge you need in today's fast-paced markets.",
+    },
+    {
+      id: nanoid(),
+      section: "about",
+      key: "image",
+      value: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+    },
+  ];
+
+  for (const content of contentData) {
+    await storage.upsertPageContent(content);
+  }
 } 

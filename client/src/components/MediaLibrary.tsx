@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Trash2, Upload, Image as ImageIcon, Copy, Check } from "lucide-react";
+import { Trash2, Upload, Image as ImageIcon, Copy, Check, FileImage } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -21,6 +21,8 @@ export default function MediaLibrary({ onSelectImage, showSelectButton = false }
   const queryClient = useQueryClient();
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
+  const [uploadMethod, setUploadMethod] = useState<'url' | 'file'>('url');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: media, isLoading } = useQuery<Media[]>({
     queryKey: ["/api/media"],
@@ -32,13 +34,12 @@ export default function MediaLibrary({ onSelectImage, showSelectButton = false }
   });
 
   const uploadMediaMutation = useMutation({
-    mutationFn: async (data: { url: string; originalName: string; altText: string }) => {
-      // For now, we'll use URL uploads. File uploads would require more backend setup
+    mutationFn: async (data: { url: string; originalName: string; altText: string; mimeType?: string; size?: number }) => {
       const mediaData = {
         filename: data.originalName.replace(/[^a-zA-Z0-9.-]/g, '_'),
         originalName: data.originalName,
-        mimeType: 'image/jpeg', // Default, would be detected from actual file
-        size: 0, // Would be calculated from actual file
+        mimeType: data.mimeType || 'image/jpeg',
+        size: data.size || 0,
         url: data.url,
         altText: data.altText,
       };
@@ -70,16 +71,43 @@ export default function MediaLibrary({ onSelectImage, showSelectButton = false }
   const handleUpload = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const url = formData.get("url") as string;
-    const originalName = formData.get("originalName") as string;
-    const altText = formData.get("altText") as string;
+    
+    if (uploadMethod === 'url') {
+      const url = formData.get("url") as string;
+      const originalName = formData.get("originalName") as string;
+      const altText = formData.get("altText") as string;
 
-    if (!url || !originalName) {
-      toast({ title: "Error", description: "URL and name are required", variant: "destructive" });
-      return;
+      if (!url || !originalName) {
+        toast({ title: "Error", description: "URL and name are required", variant: "destructive" });
+        return;
+      }
+
+      uploadMediaMutation.mutate({ url, originalName, altText });
+    } else {
+      // Handle file upload
+      const file = fileInputRef.current?.files?.[0];
+      const altText = formData.get("altText") as string;
+
+      if (!file) {
+        toast({ title: "Error", description: "Please select a file", variant: "destructive" });
+        return;
+      }
+
+      // For now, we'll convert the file to a data URL
+      // In a real app, you'd upload to a cloud service like AWS S3, Cloudinary, etc.
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUrl = e.target?.result as string;
+        uploadMediaMutation.mutate({ 
+          url: dataUrl, 
+          originalName: file.name, 
+          altText,
+          mimeType: file.type,
+          size: file.size
+        });
+      };
+      reader.readAsDataURL(file);
     }
-
-    uploadMediaMutation.mutate({ url, originalName, altText });
   };
 
   const copyToClipboard = async (url: string) => {
@@ -118,30 +146,73 @@ export default function MediaLibrary({ onSelectImage, showSelectButton = false }
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Upload New Image</DialogTitle>
-              <DialogDescription>Add a new image by providing a URL</DialogDescription>
+              <DialogDescription>Add a new image by URL or file upload</DialogDescription>
             </DialogHeader>
+            
+            {/* Upload Method Tabs */}
+            <div className="flex space-x-2 mb-4">
+              <Button
+                type="button"
+                variant={uploadMethod === 'url' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setUploadMethod('url')}
+              >
+                URL Upload
+              </Button>
+              <Button
+                type="button"
+                variant={uploadMethod === 'file' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setUploadMethod('file')}
+              >
+                File Upload
+              </Button>
+            </div>
+
             <form onSubmit={handleUpload} className="space-y-4">
-              <div>
-                <Label htmlFor="url">Image URL *</Label>
-                <Input
-                  id="url"
-                  name="url"
-                  type="url"
-                  placeholder="https://example.com/image.jpg"
-                  required
-                  data-testid="input-image-url"
-                />
-              </div>
-              <div>
-                <Label htmlFor="originalName">File Name *</Label>
-                <Input
-                  id="originalName"
-                  name="originalName"
-                  placeholder="my-image.jpg"
-                  required
-                  data-testid="input-image-name"
-                />
-              </div>
+              {uploadMethod === 'url' ? (
+                <div>
+                  <Label htmlFor="url">Image URL *</Label>
+                  <Input
+                    id="url"
+                    name="url"
+                    type="url"
+                    placeholder="https://example.com/image.jpg"
+                    required
+                    data-testid="input-image-url"
+                  />
+                </div>
+              ) : (
+                <div>
+                  <Label htmlFor="file">Image File *</Label>
+                  <Input
+                    id="file"
+                    name="file"
+                    type="file"
+                    accept="image/*"
+                    ref={fileInputRef}
+                    required
+                    data-testid="input-image-file"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Supported formats: JPG, PNG, GIF, WebP (max 5MB)
+                  </p>
+                </div>
+              )}
+              
+              {uploadMethod === 'url' && (
+                <div>
+                  <Label htmlFor="originalName">File Name *</Label>
+                  <Input
+                    id="originalName"
+                    name="originalName"
+                    placeholder="my-image.jpg"
+                    required
+                    data-testid="input-image-name"
+                  />
+                </div>
+              )}
+              
               <div>
                 <Label htmlFor="altText">Alt Text</Label>
                 <Input
@@ -151,8 +222,10 @@ export default function MediaLibrary({ onSelectImage, showSelectButton = false }
                   data-testid="input-image-alt"
                 />
               </div>
+              
               <DialogFooter>
                 <Button type="submit" data-testid="button-save-media">
+                  <Upload className="w-4 h-4 mr-2" />
                   Upload Image
                 </Button>
               </DialogFooter>

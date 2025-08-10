@@ -10,6 +10,7 @@ import { useStocks } from "@/hooks/useStocks";
 import { useNews } from "@/hooks/useNews";
 import { useTestimonials } from "@/hooks/useTestimonials";
 import { usePageContent } from "@/hooks/usePageContent";
+import MediaLibrary from "./MediaLibrary";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -29,6 +30,7 @@ export default function AdminDashboard() {
   const [editingNews, setEditingNews] = useState<any>(null);
   const [editingTestimonial, setEditingTestimonial] = useState<any>(null);
   const [editingContent, setEditingContent] = useState<any>(null);
+  const [selectedImageField, setSelectedImageField] = useState<string | null>(null);
 
   // Stock mutations
   const createStockMutation = useMutation({
@@ -266,11 +268,12 @@ export default function AdminDashboard() {
       </div>
 
       <Tabs defaultValue="stocks" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="stocks" data-testid="tab-stocks">Stocks</TabsTrigger>
           <TabsTrigger value="news" data-testid="tab-news">News</TabsTrigger>
           <TabsTrigger value="testimonials" data-testid="tab-testimonials">Testimonials</TabsTrigger>
           <TabsTrigger value="content" data-testid="tab-content">Page Content</TabsTrigger>
+          <TabsTrigger value="media" data-testid="tab-media">Media Library</TabsTrigger>
         </TabsList>
 
         <TabsContent value="stocks" className="space-y-6">
@@ -643,12 +646,24 @@ export default function AdminDashboard() {
                               <div className="flex space-x-2 mt-1">
                                 {item.key.includes('url') ? (
                                   <div className="flex-1 space-y-2">
-                                    <Input
-                                      id={`content-${item.id}`}
-                                      defaultValue={item.value}
-                                      placeholder="Enter image URL"
-                                      data-testid={`input-${item.section}-${item.key}`}
-                                    />
+                                    <div className="flex space-x-2">
+                                      <Input
+                                        id={`content-${item.id}`}
+                                        defaultValue={item.value}
+                                        placeholder="Enter image URL"
+                                        data-testid={`input-${item.section}-${item.key}`}
+                                        className="flex-1"
+                                      />
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setSelectedImageField(`content-${item.id}`)}
+                                        data-testid={`button-choose-image-${item.section}-${item.key}`}
+                                      >
+                                        Choose Image
+                                      </Button>
+                                    </div>
                                     {item.value && item.value.startsWith('http') && (
                                       <img 
                                         src={item.value} 
@@ -731,7 +746,35 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="media" className="space-y-6">
+          <MediaLibrary />
+        </TabsContent>
+
       </Tabs>
+
+      {/* Image Selection Dialog */}
+      {selectedImageField && (
+        <Dialog open={!!selectedImageField} onOpenChange={() => setSelectedImageField(null)}>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Choose an Image</DialogTitle>
+              <DialogDescription>Select an image from your media library</DialogDescription>
+            </DialogHeader>
+            <MediaLibrary
+              showSelectButton={true}
+              onSelectImage={(url) => {
+                const input = document.getElementById(selectedImageField) as HTMLInputElement;
+                if (input) {
+                  input.value = url;
+                  input.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+                setSelectedImageField(null);
+              }}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

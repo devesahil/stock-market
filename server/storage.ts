@@ -3,6 +3,7 @@ import {
   newsArticles, 
   testimonials,
   pageContent,
+  media,
   type Stock, 
   type InsertStock,
   type NewsArticle,
@@ -10,7 +11,9 @@ import {
   type Testimonial,
   type InsertTestimonial,
   type PageContent,
-  type InsertPageContent
+  type InsertPageContent,
+  type Media,
+  type InsertMedia
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and } from "drizzle-orm";
@@ -45,7 +48,15 @@ export interface IStorage {
   getPageContent(section: string): Promise<PageContent[]>;
   getPageContentByKey(section: string, key: string): Promise<PageContent | undefined>;
   upsertPageContent(content: InsertPageContent): Promise<PageContent>;
+  updatePageContent(id: string, content: Partial<InsertPageContent>): Promise<PageContent>;
   deletePageContent(id: string): Promise<void>;
+
+  // Media operations
+  getAllMedia(): Promise<Media[]>;
+  getMedia(id: string): Promise<Media | undefined>;
+  createMedia(mediaData: InsertMedia): Promise<Media>;
+  updateMedia(id: string, mediaData: Partial<InsertMedia>): Promise<Media>;
+  deleteMedia(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -195,6 +206,34 @@ export class DatabaseStorage implements IStorage {
 
   async deletePageContent(id: string): Promise<void> {
     await db.delete(pageContent).where(eq(pageContent.id, id));
+  }
+
+  // Media operations
+  async getAllMedia(): Promise<Media[]> {
+    return await db.select().from(media).orderBy(desc(media.createdAt));
+  }
+
+  async getMedia(id: string): Promise<Media | undefined> {
+    const [mediaItem] = await db.select().from(media).where(eq(media.id, id));
+    return mediaItem;
+  }
+
+  async createMedia(mediaData: InsertMedia): Promise<Media> {
+    const [newMedia] = await db.insert(media).values(mediaData).returning();
+    return newMedia;
+  }
+
+  async updateMedia(id: string, mediaData: Partial<InsertMedia>): Promise<Media> {
+    const [updatedMedia] = await db
+      .update(media)
+      .set({ ...mediaData, updatedAt: new Date() })
+      .where(eq(media.id, id))
+      .returning();
+    return updatedMedia;
+  }
+
+  async deleteMedia(id: string): Promise<void> {
+    await db.delete(media).where(eq(media.id, id));
   }
 }
 

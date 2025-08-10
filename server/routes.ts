@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertStockSchema, insertNewsArticleSchema, insertTestimonialSchema, insertPageContentSchema } from "@shared/schema";
+import { insertStockSchema, insertNewsArticleSchema, insertTestimonialSchema, insertPageContentSchema, insertMediaSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Stock routes
@@ -222,6 +222,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting page content:", error);
       res.status(400).json({ message: "Failed to delete page content" });
+    }
+  });
+
+  // Media routes
+  app.get("/api/media", async (req, res) => {
+    try {
+      const media = await storage.getAllMedia();
+      res.json(media);
+    } catch (error) {
+      console.error("Error fetching media:", error);
+      res.status(500).json({ message: "Failed to fetch media" });
+    }
+  });
+
+  app.post("/api/admin/media", async (req, res) => {
+    try {
+      const mediaData = insertMediaSchema.parse(req.body);
+      const media = await storage.createMedia(mediaData);
+      res.status(201).json(media);
+    } catch (error) {
+      console.error("Error creating media:", error);
+      res.status(400).json({ message: "Failed to create media" });
+    }
+  });
+
+  app.put("/api/admin/media/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const mediaData = insertMediaSchema.partial().parse(req.body);
+      const media = await storage.updateMedia(id, mediaData);
+      res.json(media);
+    } catch (error) {
+      console.error("Error updating media:", error);
+      res.status(400).json({ message: "Failed to update media" });
+    }
+  });
+
+  app.delete("/api/admin/media/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteMedia(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting media:", error);
+      res.status(400).json({ message: "Failed to delete media" });
     }
   });
 

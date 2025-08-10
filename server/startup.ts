@@ -74,11 +74,13 @@ async function createTables() {
 
     await db.execute(`
       CREATE TABLE IF NOT EXISTS media (
-        id VARCHAR(255) PRIMARY KEY,
-        title VARCHAR(255) NOT NULL,
-        description TEXT,
-        url VARCHAR(500) NOT NULL,
-        type VARCHAR(50) NOT NULL,
+        id VARCHAR(255) PRIMARY KEY DEFAULT gen_random_uuid(),
+        filename VARCHAR(255) NOT NULL,
+        original_name VARCHAR(255) NOT NULL,
+        mime_type VARCHAR(100) NOT NULL,
+        size INTEGER NOT NULL,
+        url TEXT NOT NULL,
+        alt_text VARCHAR(255),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
@@ -350,5 +352,40 @@ async function seedDatabase() {
 
   for (const content of contentData) {
     await storage.upsertPageContent(content);
+  }
+
+  // Seed media
+  const mediaData = [
+    {
+      id: nanoid(),
+      filename: "hero-background.jpg",
+      originalName: "hero-background.jpg",
+      mimeType: "image/jpeg",
+      size: 245760,
+      url: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+      altText: "Trading platform background image",
+    },
+    {
+      id: nanoid(),
+      filename: "about-section.jpg",
+      originalName: "about-section.jpg",
+      mimeType: "image/jpeg",
+      size: 198432,
+      url: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+      altText: "About section image showing financial charts",
+    },
+    {
+      id: nanoid(),
+      filename: "stock-chart.jpg",
+      originalName: "stock-chart.jpg",
+      mimeType: "image/jpeg",
+      size: 156789,
+      url: "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+      altText: "Stock market chart visualization",
+    },
+  ];
+
+  for (const media of mediaData) {
+    await storage.createMedia(media);
   }
 } 

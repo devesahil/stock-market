@@ -14,7 +14,7 @@ import MediaLibrary from "./MediaLibrary";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Trash2, Edit, Plus } from "lucide-react";
+import { Trash2, Edit, Plus, Image as ImageIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -644,13 +644,13 @@ export default function AdminDashboard() {
                                 {item.key.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                               </Label>
                               <div className="flex space-x-2 mt-1">
-                                {item.key.includes('url') ? (
+                                {item.key.includes('image') || item.key.includes('url') ? (
                                   <div className="flex-1 space-y-2">
                                     <div className="flex space-x-2">
                                       <Input
                                         id={`content-${item.id}`}
                                         defaultValue={item.value}
-                                        placeholder="Enter image URL"
+                                        placeholder="Enter image URL or choose from library"
                                         data-testid={`input-${item.section}-${item.key}`}
                                         className="flex-1"
                                       />
@@ -661,19 +661,37 @@ export default function AdminDashboard() {
                                         onClick={() => setSelectedImageField(`content-${item.id}`)}
                                         data-testid={`button-choose-image-${item.section}-${item.key}`}
                                       >
+                                        <ImageIcon className="w-4 h-4 mr-1" />
                                         Choose Image
                                       </Button>
                                     </div>
-                                    {item.value && item.value.startsWith('http') && (
-                                      <img 
-                                        src={item.value} 
-                                        alt="Preview" 
-                                        className="w-32 h-20 object-cover rounded border"
-                                        onError={(e) => {
-                                          const target = e.target as HTMLImageElement;
-                                          target.style.display = 'none';
-                                        }}
-                                      />
+                                    {item.value && (item.value.startsWith('http') || item.value.startsWith('data:')) && (
+                                      <div className="relative">
+                                        <img 
+                                          src={item.value} 
+                                          alt="Preview" 
+                                          className="w-32 h-20 object-cover rounded border"
+                                          onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            target.style.display = 'none';
+                                          }}
+                                        />
+                                        <Button
+                                          type="button"
+                                          variant="destructive"
+                                          size="sm"
+                                          className="absolute -top-2 -right-2 h-6 w-6 p-0"
+                                          onClick={() => {
+                                            const input = document.getElementById(`content-${item.id}`) as HTMLInputElement;
+                                            if (input) {
+                                              input.value = '';
+                                              input.dispatchEvent(new Event('change', { bubbles: true }));
+                                            }
+                                          }}
+                                        >
+                                          ×
+                                        </Button>
+                                      </div>
                                     )}
                                   </div>
                                 ) : item.value.length > 100 ? (
@@ -756,22 +774,38 @@ export default function AdminDashboard() {
       {/* Image Selection Dialog */}
       {selectedImageField && (
         <Dialog open={!!selectedImageField} onOpenChange={() => setSelectedImageField(null)}>
-          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Choose an Image</DialogTitle>
-              <DialogDescription>Select an image from your media library</DialogDescription>
+              <DialogDescription>
+                Select an image from your media library or upload a new one
+              </DialogDescription>
             </DialogHeader>
-            <MediaLibrary
-              showSelectButton={true}
-              onSelectImage={(url) => {
-                const input = document.getElementById(selectedImageField) as HTMLInputElement;
-                if (input) {
-                  input.value = url;
-                  input.dispatchEvent(new Event('change', { bubbles: true }));
-                }
-                setSelectedImageField(null);
-              }}
-            />
+            <div className="space-y-4">
+              <MediaLibrary
+                showSelectButton={true}
+                onSelectImage={(url) => {
+                  const input = document.getElementById(selectedImageField) as HTMLInputElement;
+                  if (input) {
+                    input.value = url;
+                    input.dispatchEvent(new Event('change', { bubbles: true }));
+                  }
+                  setSelectedImageField(null);
+                  toast({ 
+                    title: "Image Selected", 
+                    description: "Image has been added to the content field" 
+                  });
+                }}
+              />
+            </div>
+            <DialogFooter>
+              <Button 
+                variant="outline" 
+                onClick={() => setSelectedImageField(null)}
+              >
+                Cancel
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       )}
